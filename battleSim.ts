@@ -19,12 +19,49 @@ class Unit {
         this.damage = damage;
         this.range = range;
     }
+
+    getRange(){
+        return this.range;
+    }
+
+    getDamage() {
+        return this.damage;
+    }
+
+    setDirectionY(direction : number) {
+        if (direction ===0) {
+            //switch direction: to be implemented by ibrahim
+            //this.nightUnit.body.velocity.y = this.speed;
+            throw "TODO: Unimplemented"
+        } else if (direction ===1){
+            this.basicUnit.body.velocity.y = this.speed;
+        } else if (direction === -1) {
+            this.basicUnit.body.velocity.y = 0 - this.speed;
+        } else {
+            throw "Programmer Error..."
+        }
+    }
+
+    setDirectionX(direction : number) {
+        if (direction ===0) {
+            //switch direction: to be implemented by ibrahim
+            //this.nightUnit.body.velocity.y = this.speed;
+            throw "TODO: Unimplemented"
+        } else if (direction ===1){
+            this.basicUnit.body.velocity.x = this.speed;
+        } else if (direction === -1) {
+            this.basicUnit.body.velocity.x = 0 - this.speed;
+        } else{
+            throw "Programmer Error..."
+        }
+    }
+
 }
 
 class Night {
     public nightUnit : Phaser.Sprite;
     public health : number;
-    private speed : number;
+    public speed : number;
     private damage : number;
     private range : number;
     constructor(x : number, y : number, health : number, speed : number, damage : number, range : number) {
@@ -35,11 +72,47 @@ class Night {
         this.damage = damage;
         this.range = range;
     }
+
+    getRange(){
+        return this.range;
+    }
+
+    getDamage() {
+        return this.damage;
+    }
+
+    setDirectionY(direction : number) {
+        if (direction ===0) {
+            //switch direction: to be implemented by ibrahim
+            //this.nightUnit.body.velocity.y = this.speed;
+            throw "TODO: Unimplemented"
+        } else if (direction ===1){
+            this.nightUnit.body.velocity.y = this.speed;
+        } else if (direction === -1) {
+            this.nightUnit.body.velocity.y = 0 - this.speed;
+        } else {
+            throw "Programmer Error..."
+        }
+    }
+
+    setDirectionX(direction : number) {
+        if (direction ===0) {
+            //switch direction: to be implemented by ibrahim
+            //this.nightUnit.body.velocity.y = this.speed;
+            throw "TODO: Unimplemented"
+        } else if (direction ===1){
+            this.nightUnit.body.velocity.x = this.speed;
+        } else if (direction === -1) {
+            this.nightUnit.body.velocity.x = 0 - this.speed;
+        } else{
+            throw "Programmer Error..."
+        }
+    }
 }
 
-var amountUnits : number = 10;
+var amountUnits : number = 15;
 var amountKnights : number = 5;
-var nightsAttacking : boolean = true;
+var nightsAttacking : boolean = false;
 var basicUnits : Array<Unit> = [];
 var nightUnits : Array<Night> = [];
 
@@ -50,7 +123,7 @@ function create() {
     }
 
     for(let i : number = 0; i < amountKnights; i++) {
-        nightUnits[i] = new Night(250 + i * 25, 400, 150, 150, 150, 20);
+        nightUnits[i] = new Night(250 + i * 25, 400, 150, 60, 150, 20);
     }
 }
 
@@ -95,10 +168,51 @@ function computeAverageBasicUnitY(basicUnits : Array<Unit>) : number {
 }
 
 
+/**
+ * What does this method do
+ *
+ * the method within range computes wether or not nights are within range of the defending units.
+ * this boolean returned can be used in the attack logic later.
+ *
+ * @param {number} range
+ * @return {type}
+ */
+function nightsWithinRangeOfUnits() {
+    var withinRange = false;
+
+    var nightsPosYAvg = computeAverageNightUnitY(nightUnits);
+    var unitsPosYAvg = computeAverageBasicUnitY(basicUnits);
+
+    var diffAvgY = nightsPosYAvg - unitsPosYAvg;
+
+    if(diffAvgY <= nightUnits[0].getRange()) {
+        withinRange = true;
+    } else {
+        withinRange = false;
+    }
+    return withinRange;
+}
+
+function unitsWithinRangeOfNights() {
+    var withinRange = false;
+
+    var nightsPosYAvg = computeAverageNightUnitY(nightUnits);
+    var unitsPosYAvg = computeAverageBasicUnitY(basicUnits);
+
+    var diffAvgY = nightsPosYAvg - unitsPosYAvg;
+
+    if(diffAvgY <= basicUnits[0].getRange()) {
+        withinRange = true;
+    } else {
+        withinRange = false;
+    }
+    return withinRange;
+}
 
 
 
 function update() {
+    /* Movement logic begin */
     var nightsPosXAvg = computeAverageNightUnitX(nightUnits);
     var unitsPosXAvg = computeAverageBasicUnitX(basicUnits);
     var nightsPosYAvg = computeAverageNightUnitY(nightUnits);
@@ -107,7 +221,6 @@ function update() {
     var diffAvgX = nightsPosXAvg - unitsPosXAvg;
     var diffAvgY = nightsPosYAvg - unitsPosYAvg;
 
-    console.log(diffAvgY);
 
     if(nightsAttacking) {
         for(let unit of basicUnits) {
@@ -116,25 +229,20 @@ function update() {
 
         for(let night of nightUnits) {
             if(diffAvgX < 0) {
-                night.nightUnit.body.velocity.x = 60;
+                /*for(var i = 0; i < nightUnits.length; i++) {
+                    nightUnits[i].nightUnit.speed
+                }*/
+                /* do not try to play with the velocity of the sprite's body in here */
+                //night.nightUnit.body.speed =
+                night.setDirectionX(1)
             } else {
-                night.nightUnit.body.velocity.x = -60;
+                night.setDirectionX(-1)
             }
 
             if(diffAvgY < 0) {
-                night.nightUnit.body.velocity.y = 60;
+                night.setDirectionY(1)
             } else {
-                night.nightUnit.body.velocity.y = -60;
-            }
-        }
-        for(let i = 0; i < basicUnits.length; i++) {
-            if(basicUnits[i].basicUnit.health > 0) {
-                if(diffAvgY = 20) {
-                    basicUnits[i].basicUnit.health = basicUnits[i].basicUnit.health - 150;
-                    console.log(basicUnits[i].basicUnit.health);
-                }
-            } else {
-                basicUnits[i].basicUnit.kill();
+                night.setDirectionY(-1)
             }
         }
     } else /* units are attacking */ {
@@ -143,8 +251,9 @@ function update() {
         }
 
         for(let unit of basicUnits) {
-            if(diffAvgY <= 20) {
+            if(diffAvgX < 0) {
                 unit.basicUnit.body.velocity.x = -60;
+
             } else {
                 unit.basicUnit.body.velocity.x = 60;
             }
@@ -156,6 +265,37 @@ function update() {
             }
         }
     }
+    /* Movement logic end */
+
+    /* Attack Logic begin*/
+
+    if (nightsAttacking) {
+        if(nightsWithinRangeOfUnits() === true) {
+            game.time.events.add(Phaser.Timer.SECOND, function() {
+                for(let unit of basicUnits) {
+                    unit.health = unit.health - nightUnits[0].getDamage();
+                    if (unit.health <= 0) {
+                        unit.basicUnit.kill();
+                    }
+                }
+
+            });
+        }
+    } else {
+        if(unitsWithinRangeOfNights() === true) {
+            game.time.events.add(Phaser.Timer.SECOND, function() {
+                for(let night of nightUnits) {
+                    night.health = night.health - basicUnits[0].getDamage();
+                    if (night.health <= 0) {
+                        night.nightUnit.kill();
+                    }
+                }
+
+            });
+        }
+    }
+
+    /* Attack Logic end */
 }
 
 function render() {
