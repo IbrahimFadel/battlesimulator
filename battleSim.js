@@ -51,6 +51,66 @@ var Unit = /** @class */ (function () {
             throw "Programmer Error...";
         }
     };
+    Unit.prototype.withinRange = function (arrayOfNights) {
+        /* 'this' is a reference to the current object (which is an instance of Night (the class))*/
+        var arrayOfNightsWithinRange = [];
+        var unitX = this.basicUnit.x;
+        var unitY = this.basicUnit.y;
+        for (var _i = 0, arrayOfNights_1 = arrayOfNights; _i < arrayOfNights_1.length; _i++) {
+            var night = arrayOfNights_1[_i];
+            /* In this loop, you're operating on
+            * 1) unit, which is changing in the loop
+            *  and
+            *  2) this, the night which doesn't change
+            * */
+            var nightX = night.nightUnit.x;
+            var nightY = night.nightUnit.y;
+            var diffX = nightX - unitX;
+            var diffY = nightY - unitY;
+            var distance = Math.sqrt((diffX * diffX) + (diffY * diffY));
+            if (distance <= this.range) {
+                arrayOfNightsWithinRange.push(night);
+            }
+        }
+        return arrayOfNightsWithinRange;
+    };
+    Unit.prototype.closestUnit = function (arrayOfNights) {
+        /* 'this' is a reference to the current object (which is an instance of Night (the class))*/
+        var arrayOfNightsWithinRange = [];
+        var unitX = this.basicUnit.x;
+        var unitY = this.basicUnit.y;
+        var closestNight = arrayOfNights[0];
+        var closestDistance = Number.MAX_VALUE;
+        for (var _i = 0, arrayOfNights_2 = arrayOfNights; _i < arrayOfNights_2.length; _i++) {
+            var night = arrayOfNights_2[_i];
+            /* In this loop, you're operating on
+            * 1) unit, which is changing in the loop
+            *  and
+            *  2) this, the night which doesn't change
+            * */
+            var nightX = night.nightUnit.x;
+            var nightY = night.nightUnit.y;
+            var diffX = nightX - unitX;
+            var diffY = nightY - unitY;
+            var distance = Math.sqrt((diffX * diffX) + (diffY * diffY));
+            if (distance < closestDistance) {
+                closestNight = night;
+                closestDistance = distance;
+            }
+        }
+        return closestNight;
+    };
+    Unit.prototype.killUnit = function () {
+        this.basicUnit.kill();
+        this.damage = 0;
+    };
+    Unit.prototype.isAlive = function () {
+        var alive = true;
+        if (this.health <= 0) {
+            alive = false;
+        }
+        return alive;
+    };
     return Unit;
 }());
 var Night = /** @class */ (function () {
@@ -163,6 +223,17 @@ var Night = /** @class */ (function () {
         }
         return closestUnit;
     };
+    Night.prototype.killNight = function () {
+        this.nightUnit.kill();
+        this.damage = 0;
+    };
+    Night.prototype.isAlive = function () {
+        var alive = true;
+        if (this.health <= 0) {
+            alive = false;
+        }
+        return alive;
+    };
     return Night;
 }());
 function a() {
@@ -180,9 +251,9 @@ function a() {
         // a2 is not accessible
     }
 }
-var amountUnits = 30;
-var amountKnights = 5;
-var nightsAttacking = true;
+var amountUnits = 50;
+var amountKnights = 10;
+var nightsAttacking = false;
 var basicUnits = [];
 var nightUnits = [];
 var nightsAlive = true;
@@ -207,51 +278,111 @@ function create() {
         }
     }*/
     var y = 200;
+    var xdiff = 0;
     for (var i = 0; i < amountUnits; i++) {
         if (i % 15 === 0) {
             y += 30;
+            xdiff = 0;
         }
-        basicUnits[i] = new Unit(250 + i * 25, y, 100, 100, 0.95, 20);
+        basicUnits[i] = new Unit(250 + xdiff, y, 100, 100, 0.95, 100);
+        xdiff += 25;
     }
+    /*let y2 = 200;
+    let xdiff2 = 0;
+    for(let i : number = 0; i < amountUnits; i++) {
+        if(i % 15 === 0) {
+            y2 += 30;
+            xdiff2 = 0;
+        }
+        basicUnits[i] = new Unit(250 + xdiff2, y2, 100, 100,0.95, 100);
+        xdiff2 += 25;
+    }*/
     for (var i = 0; i < amountKnights; i++) {
         nightUnits[i] = new Night(250 + i * 25, 400, 150, 60, 1, 60);
     }
+    /*let y = 400;
+    let xdiff = 0;
+    for(let i : number = 0; i < amountKnights; i++) {
+        let y = 400;
+        let xdiff = 0;
+        if(i % 15 === 0) {
+            y += 30;
+            xdiff = 0;
+        }
+        nightUnits[i] = new Night(250 + xdiff, y, 100, 100, 1, 100);
+        xdiff += 25;
+    }*/
 }
 function computeAverageNightUnitX(nightUnits) {
     //nightUnits[].x / nightUnits[].length
     var totalNightsPosX = 0;
-    for (var i = 0; i < nightUnits.length; i++) {
-        totalNightsPosX = totalNightsPosX + nightUnits[i].nightUnit.x;
+    var nightsAlive = filterNightsAlive(nightUnits);
+    for (var i = 0; i < nightsAlive.length; i++) {
+        totalNightsPosX = totalNightsPosX + nightsAlive[i].nightUnit.x;
     }
-    var nightsPosXAvg = totalNightsPosX / nightUnits.length;
+    var nightsPosXAvg = totalNightsPosX / nightsAlive.length;
     return nightsPosXAvg;
 }
 function computeAverageBasicUnitX(basicUnits) {
     //nightUnits[].x / nightUnits[].length
     var totalUnitsPosX = 0;
-    for (var i = 0; i < basicUnits.length; i++) {
-        totalUnitsPosX = totalUnitsPosX + basicUnits[i].basicUnit.x;
+    var unitsAlive = filterUnitsAlive(basicUnits);
+    for (var i = 0; i < unitsAlive.length; i++) {
+        totalUnitsPosX = totalUnitsPosX + unitsAlive[i].basicUnit.x;
     }
-    var unitsPosXAvg = totalUnitsPosX / basicUnits.length;
+    var unitsPosXAvg = totalUnitsPosX / unitsAlive.length;
     return unitsPosXAvg;
 }
 function computeAverageNightUnitY(nightUnits) {
     //nightUnits[].x / nightUnits[].length
+    var totalNightsPos = 0;
+    var arrayNightsAlive = filterNightsAlive(nightUnits);
     var totalNightsPosY = 0;
-    for (var i = 0; i < nightUnits.length; i++) {
-        totalNightsPosY = totalNightsPosY + nightUnits[i].nightUnit.y;
+    for (var i = 0; i < arrayNightsAlive.length; i++) {
+        totalNightsPosY = totalNightsPosY + arrayNightsAlive[i].nightUnit.y;
     }
-    var nightsPosYAvg = totalNightsPosY / nightUnits.length;
+    var nightsPosYAvg = totalNightsPosY / arrayNightsAlive.length;
     return nightsPosYAvg;
 }
 function computeAverageBasicUnitY(basicUnits) {
     //nightUnits[].x / nightUnits[].length
+    var unitsAlive = filterUnitsAlive(basicUnits);
     var totalUnitsPosY = 0;
-    for (var i = 0; i < basicUnits.length; i++) {
-        totalUnitsPosY = totalUnitsPosY + basicUnits[i].basicUnit.y;
+    for (var i = 0; i < unitsAlive.length; i++) {
+        totalUnitsPosY = totalUnitsPosY + unitsAlive[i].basicUnit.y;
     }
-    var unitsPosYAvg = totalUnitsPosY / basicUnits.length;
+    var unitsPosYAvg = totalUnitsPosY / unitsAlive.length;
     return unitsPosYAvg;
+}
+/**
+ * Given an array of mixed alive and dead units,
+ * returns an array of only the units alive
+ *
+ * @param {Array<Unit>} basicUnits
+ * @return {Array<Unit>}
+ */
+function filterUnitsAlive(basicUnits) {
+    var unitsAlive = [];
+    for (var i = 0; i < basicUnits.length; i++) {
+        if (basicUnits[i].isAlive() === true) {
+            unitsAlive.push(basicUnits[i]);
+        }
+    }
+    return unitsAlive;
+}
+/**
+ *
+ * @param {Array<Night>} nightUnit
+ * @return {Array<Night>}
+ */
+function filterNightsAlive(nightUnit) {
+    var nightsAlive = [];
+    for (var i = 0; i < nightUnits.length; i++) {
+        if (nightUnits[i].isAlive() === true) {
+            nightsAlive.push(nightUnits[i]);
+        }
+    }
+    return nightsAlive;
 }
 /**
  * What does this method do
@@ -312,9 +443,14 @@ function handleMovement() {
             var unit = basicUnits_1[_i];
             unit.basicUnit.body.immovable = true;
         }
-        for (var _a = 0, nightUnits_1 = nightUnits; _a < nightUnits_1.length; _a++) {
-            var night = nightUnits_1[_a];
-            if (diffAvgX < 0) {
+        for (var _a = 0, _b = filterNightsAlive(nightUnits); _a < _b.length; _a++) {
+            var night = _b[_a];
+            var closestUnit = night.closestUnit(filterUnitsAlive(basicUnits));
+            var closestUnitX = closestUnit.basicUnit.x;
+            var closestUnitY = closestUnit.basicUnit.y;
+            var nightX = night.nightUnit.x;
+            var nightY = night.nightUnit.y;
+            if (closestUnitX > nightX) {
                 /*for(var i = 0; i < nightUnits.length; i++) {
                     nightUnits[i].nightUnit.speed
                 }*/
@@ -325,7 +461,7 @@ function handleMovement() {
             else {
                 night.setDirectionX(-1);
             }
-            if (diffAvgY < 0) {
+            if (closestUnitY > nightY) {
                 night.setDirectionY(1);
             }
             else {
@@ -334,23 +470,28 @@ function handleMovement() {
         }
     }
     else {
-        for (var _b = 0, nightUnits_2 = nightUnits; _b < nightUnits_2.length; _b++) {
-            var night = nightUnits_2[_b];
+        for (var _c = 0, _d = filterNightsAlive(nightUnits); _c < _d.length; _c++) {
+            var night = _d[_c];
             night.nightUnit.body.immovable = true;
         }
-        for (var _c = 0, basicUnits_2 = basicUnits; _c < basicUnits_2.length; _c++) {
-            var unit = basicUnits_2[_c];
-            if (diffAvgX < 0) {
-                unit.basicUnit.body.velocity.x = -60;
+        for (var _e = 0, _f = filterUnitsAlive(basicUnits); _e < _f.length; _e++) {
+            var unit = _f[_e];
+            var closestNight = unit.closestUnit(filterNightsAlive(nightUnits));
+            var closestNightX = closestNight.nightUnit.x;
+            var closestNightY = closestNight.nightUnit.y;
+            var unitX = unit.basicUnit.x;
+            var unitY = unit.basicUnit.y;
+            if (closestNightX > unitX) {
+                unit.setDirectionX(1);
             }
             else {
-                unit.basicUnit.body.velocity.x = 60;
+                unit.setDirectionX(-1);
             }
-            if (diffAvgY < 0) {
-                unit.basicUnit.body.velocity.y = -60;
+            if (closestNightY > unitY) {
+                unit.setDirectionY(1);
             }
             else {
-                unit.basicUnit.body.velocity.y = 60;
+                unit.setDirectionY(-1);
             }
         }
     }
@@ -369,16 +510,26 @@ function update() {
     handleMovement();
     /* Movement logic end */
     /* Attack Logic begin*/
-    var theFirstNight = nightUnits[2];
-    for (var _i = 0, nightUnits_3 = nightUnits; _i < nightUnits_3.length; _i++) {
-        var night = nightUnits_3[_i];
+    for (var _i = 0, nightUnits_1 = nightUnits; _i < nightUnits_1.length; _i++) {
+        var night = nightUnits_1[_i];
         var closestUnit = night.closestUnit(basicUnits);
         // Check if within range of night
         if (night.withinRange([closestUnit]).length > 0) {
             closestUnit.health = closestUnit.health - night.getDamage();
             if (closestUnit.health <= 0) {
-                closestUnit.basicUnit.kill();
-                console.log("Hi");
+                closestUnit.killUnit();
+            }
+            //console.log(closestUnit.health);
+        }
+    }
+    for (var _a = 0, basicUnits_2 = basicUnits; _a < basicUnits_2.length; _a++) {
+        var unit = basicUnits_2[_a];
+        var closestNight = unit.closestUnit(nightUnits);
+        // Check if within range of night
+        if (unit.withinRange([closestNight]).length > 0) {
+            closestNight.health = closestNight.health - unit.getDamage();
+            if (closestNight.health <= 0) {
+                closestNight.killNight();
             }
             //console.log(closestUnit.health);
         }
