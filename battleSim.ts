@@ -349,6 +349,7 @@ function create() {
         nightUnits[i] = new Night(250 + i * 25, 400, 150, 60, 1, 60);
     }
 
+
     /*let y = 400;
     let xdiff = 0;
     for(let i : number = 0; i < amountKnights; i++) {
