@@ -3,6 +3,7 @@ var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload:
 function preload() {
     game.load.image('basicUnit', 'assets/bullet153.png');
     game.load.image('knightUnit', 'assets/bullet147.png');
+    game.load.image('musketUnit', 'assets/bullet112.png');
 }
 
 class Unit {
@@ -101,14 +102,14 @@ class Unit {
         return arrayOfUnitsWithinRange;
     }
 
-    closestUnit(arrayOfUnits : Array<Unit>) : Unit {
+    closestUnit(arrayOfUnits : Array<Unit>) : Unit | null {
         /* 'this' is a reference to the current object (which is an instance of Night (the class))*/
         let arrayOfUnitsWithinRange : Array<Unit> = [];
 
         var currentUnitX : number = this.basicUnit.x;
         var curremtUnitY : number = this.basicUnit.y;
 
-        var closestUnit = arrayOfUnits[0];
+        var closestUnit = null;
         var closestDistance = Number.MAX_VALUE;
 
         for(let unit of arrayOfUnits){
@@ -149,44 +150,19 @@ class Unit {
         return alive;
     }
 
-}
-
-function a(){
-    var a1
-    // a1 is accessible here
-    // b1 is not accessible here
-    let a2
-    // a2 is accessible here
-    // b2 is not accessible here
-    function b(){
-        var b1
-        let b2
-        // a1 is accessible here
-        // b1 is accessible here
-        // a2 is not accessible
+    stopMoving() {
+        this.basicUnit.body.velocity.x = 0;
+        this.basicUnit.body.velocity.y = 0;
     }
 }
 
-var amountUnits : number = 50;
+
+var amountUnits : number = 10;
 var amountKnights : number = 10;
-var nightsAttacking : boolean = false;
+var nightsAttacking : boolean = true;
 var allUnits : Array<Unit> = [];
 
 function create() {
-
-    /*if(amountUnits > 0 && amountUnits <= 15) {
-        for(let i : number = 0; i < amountUnits; i++) {
-            basicUnits[i] = new Unit(200 + i * 25, 200, 100, 100, 0.95, 20);
-        }
-    }
-    if(amountUnits > 15 && amountUnits <= 30) {
-        for(let i : number = 0; i < amountUnits - amountUnitsDifference; i++) {
-            basicUnits[i] = new Unit(200 + i * 25, 200, 100, 100, 0.95, 20);
-            for(let i : number = 0; i < amountUnitsDifference; i++) {
-                basicUnits[i] = new Unit(200 + i * 25, 200 + unitSpacing, 100, 100, 0.95, 20);
-            }
-        }
-    }*/
 
     let y = 200;
     let xdiff = 0;
@@ -195,40 +171,13 @@ function create() {
             y += 30;
             xdiff = 0;
         }
-        allUnits[i] = new Unit(250 + xdiff, y, 100, 100,0.95, 100, 0, 'basicUnit');
+        allUnits.push(new Unit(250 + xdiff, y, 100, 100,0.95, 100, 0, 'basicUnit'));
         xdiff += 25;
     }
 
-    /*let y2 = 200;
-    let xdiff2 = 0;
-    for(let i : number = 0; i < amountUnits; i++) {
-        if(i % 15 === 0) {
-            y2 += 30;
-            xdiff2 = 0;
-        }
-        basicUnits[i] = new Unit(250 + xdiff2, y2, 100, 100,0.95, 100);
-        xdiff2 += 25;
-    }*/
-
     for(let i : number = 0; i < amountKnights; i++) {
-        allUnits[i] = new Unit(250 + i * 25, 400, 150, 60, 1, 60, 1, 'knightUnit');
+        allUnits.push(new Unit(250 + i * 25, 400, 150, 60, 1, 60, 1, 'knightUnit'));
     }
-
-
-    /*let y = 400;
-    let xdiff = 0;
-    for(let i : number = 0; i < amountKnights; i++) {
-        let y = 400;
-        let xdiff = 0;
-        if(i % 15 === 0) {
-            y += 30;
-            xdiff = 0;
-        }
-        nightUnits[i] = new Night(250 + xdiff, y, 100, 100, 1, 100);
-        xdiff += 25;
-    }*/
-
-
 }
 
 
@@ -257,14 +206,14 @@ function filterForOtherTeams(arrayOfUnits : Array<Unit>, teamNumber : number) : 
  * @return {Array<Unit>}
  */
 function filterForSameTeam(arrayOfUnits : Array<Unit>, teamNumber : number) : Array<Unit> {
-    let otherTeams : Array<Unit> = [];
+    let sameTeam : Array<Unit> = [];
 
     for(let i : number = 0; i < arrayOfUnits.length; i++) {
         if(arrayOfUnits[i].team === teamNumber) {
-            otherTeams.push(arrayOfUnits[i])
+            sameTeam.push(arrayOfUnits[i])
         }
     }
-    return otherTeams
+    return sameTeam
 }
 
 /**
@@ -298,6 +247,11 @@ function teamMove(basicUnits : Array<Unit>, teamNum: number){
     for(let unit of filterUnitsAlive(basicUnitsFromTeam)) {
         let closestUnit = unit.closestUnit(filterUnitsAlive(basicUnitsFromOtherTeams));
 
+        if(closestUnit === null) {
+            unit.stopMoving();
+            continue
+        }
+
         let closestUnitX = closestUnit.basicUnit.x;
         let closestUnitY = closestUnit.basicUnit.y;
 
@@ -305,11 +259,6 @@ function teamMove(basicUnits : Array<Unit>, teamNum: number){
         let unitY = unit.basicUnit.y;
 
         if(closestUnitX > unitX) {
-            /*for(var i = 0; i < nightUnits.length; i++) {
-                nightUnits[i].nightUnit.speed
-            }*/
-            /* do not try to play with the velocity of the sprite's body in here */
-            //night.nightUnit.body.speed =
             unit.setDirectionX(1)
         } else {
             unit.setDirectionX(-1)
@@ -335,7 +284,7 @@ function teamAttack(basicUnits : Array<Unit>, teamNum : number){
     for(let unit of basicUnitsFromTeam) {
         let closestUnit = unit.closestUnit(basicUnitsFromOtherTeams);
         // Check if within range of night
-        if(unit.withinRange([closestUnit]).length > 0){
+        if(closestUnit && unit.withinRange([closestUnit]).length > 0){
             closestUnit.health = closestUnit.health - unit.getDamage();
             if(closestUnit.health <= 0) {
                 closestUnit.killUnit();
@@ -352,7 +301,27 @@ function handleMovement(){
         teamMove(allUnits, 0);
     //}else{
         teamMove(allUnits, 1);
-    //}
+    //s}
+}
+
+function doOverlap(){
+    for(let unit of allUnits) {
+        //at every iteration of the loop
+        //unit takes on a new unit from allUnits
+
+        //Array<Unit>
+        let unitsFromOtherTeam = filterForOtherTeams(filterUnitsAlive(allUnits), unit.team);
+        //let dog of dogs
+        //let cat of cats
+        //let person of people
+        for(let otherUnit of unitsFromOtherTeam){
+            game.physics.arcade.collide(otherUnit.basicUnit, unit.basicUnit, function(unit1 : Phaser.Sprite, unit2 : Phaser.Sprite) {
+
+            });
+        }
+        //overlap(:sprite, :sprite)
+
+    }
 }
 
 function update() {
@@ -368,6 +337,8 @@ function update() {
         teamAttack(allUnits, 1)
     //}
     /* Attack Logic end */
+
+    doOverlap();
 }
 
 function render() {
