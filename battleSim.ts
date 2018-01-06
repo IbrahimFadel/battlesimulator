@@ -8,6 +8,7 @@ function preload() {
     game.load.image('basicUnit', 'assets/bullet153.png');
     game.load.image('knightUnit', 'assets/bullet147.png');
     game.load.image('musketUnit', 'assets/bullet112.png');
+    game.load.image('uiPage', 'assets/sunset.png');
 }
 
 class Unit {
@@ -172,14 +173,15 @@ var amountMuskets: number = 20;
 var nightsAttacking: boolean = true;
 var allUnits: Array<Unit> = [];
 var teamCount: number = 3;
-var textEntered = ""
+var textEntered = "";
 var textOnScreen: Phaser.Text | null;
 var textAnyKey: Phaser.Text;
 var amountUnits: number = 20;
+var inputUsed: boolean = false;
 
 function handleTextCreate() {
     var style = {font: "10px Arial", fill: "#ffffff", align: "center"};
-    textOnScreen = game.add.text(0, 0, textEntered, style);
+    textOnScreen = game.add.text(0 - 1600, 0, textEntered, style);
 
     var style1 = {font: "30px Arial", fill: "#ffffff", align: "center"};
     textAnyKey = game.add.text(300, 100, "Press any key to start!", style1);
@@ -190,22 +192,28 @@ function handleTextCreate() {
         }
 
         if (e.key === "Backspace") {
-            textEntered = ""
+            textEntered = "";
         } else {
             textEntered = textEntered + e.key
         }
 
         if (e.key === "Enter") {
-            parseInt(textEntered);
+
             textEntered = ""
         }
 
         textOnScreen.setText(textEntered);
         console.log(e);
+        //parseInt(textEntered);
     });
 }
 
 function create() {
+    game.world.setBounds(-1600, 0, 2600, 600);
+    handleTextCreate()
+    game.add.image(-1600, 0, 'uiPage');
+    game.add.image(-800, 0, 'uiPage');
+
     let y = 100;
     let xdiff = 0;
     for (let i: number = 0; i < amountUnits; i++) {
@@ -241,7 +249,7 @@ function create() {
     }
 
 
-    handleTextCreate()
+
 }
 
 
@@ -408,21 +416,18 @@ function update() {
 
     //game.input.keyboard.addCallbacks(null, null, null, function(KeyK : KeyboardEvent) {
     //});
+    if(inputUsed === false) {
+        game.camera.x += 0 - 1600;
+    }else {
+        handleMovement();
 
+        handleAttack();
 
-    handleMovement();
-
-
-    /* Movement logic end */
-
-    /* Attack Logic begin*/
-    handleAttack();
-    /* Attack Logic end */
-
-    doOverlap();
+        doOverlap();
+    }
 }
 
 function render() {
-
+    //game.debug.cameraInfo(game.camera, 0 - 1600, 0);
 
 }
