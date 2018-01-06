@@ -1,4 +1,4 @@
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(1000, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update });
 
 function preload() {
     game.load.image('basicUnit', 'assets/bullet153.png');
@@ -154,17 +154,55 @@ class Unit {
         this.basicUnit.body.velocity.x = 0;
         this.basicUnit.body.velocity.y = 0;
     }
+
+    beginMoving() {
+        this.basicUnit.body.velocity.x = this.speed;
+        this.basicUnit.body.velocity.y = this.speed;
+    }
 }
 
 
-var amountUnits : number = 10;
-var amountKnights : number = 10;
+
+var amountKnights : number = 20;
+var amountMuskets : number = 20;
 var nightsAttacking : boolean = true;
 var allUnits : Array<Unit> = [];
+var teamCount : number = 3;
+var textEntered = ""
+var textOnScreen : Phaser.Text | null;
+var textAnyKey : Phaser.Text | null;
+var amountUnits : number = 20;
+
+function handleTextCreate(){
+    var style = { font: "10px Arial", fill: "#ffffff", align: "center" };
+    textOnScreen = game.add.text(0, 0, textEntered, style);
+
+    var style1 = { font: "30px Arial", fill: "#ffffff", align: "center" };
+    textAnyKey = game.add.text(300, 100, "Press any key to start!", style1);
+
+    game.input.keyboard.addCallbacks(null, function(e : KeyboardEvent){
+        if(textOnScreen == null){
+            return
+        }
+
+        if(e.key === "Backspace"){
+            textEntered = ""
+        } else{
+            textEntered = textEntered + e.key
+        }
+
+        if(e.key === "Enter") {
+            parseInt(textEntered);
+            textEntered = ""
+        }
+
+        textOnScreen.setText(textEntered);
+        console.log(e);
+    });
+}
 
 function create() {
-
-    let y = 200;
+    let y = 100;
     let xdiff = 0;
     for(let i : number = 0; i < amountUnits; i++) {
         if(i % 15 === 0) {
@@ -175,9 +213,31 @@ function create() {
         xdiff += 25;
     }
 
+    let knightY = 500;
+    let nightxDiff = 0;
     for(let i : number = 0; i < amountKnights; i++) {
-        allUnits.push(new Unit(250 + i * 25, 400, 150, 60, 1, 60, 1, 'knightUnit'));
+        if(i % 15 === 0) {
+            knightY += 30;
+            nightxDiff = 0;
+        }
+        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 60, 1, 60, 1, 'knightUnit'));
+        nightxDiff +=25;
     }
+
+
+    let musketY = 650;
+    let musketxDiff = 0;
+    for(let i : number = 0; i < amountMuskets; i++) {
+        if(i % 15 === 0) {
+            musketY += 30;
+            musketxDiff = 0;
+        }
+        allUnits.push(new Unit(musketY, 200 + musketxDiff, musketY, 60, 1, 60, 2, 'musketUnit'));
+        musketxDiff += 25;
+    }
+
+
+    handleTextCreate()
 }
 
 
@@ -248,9 +308,9 @@ function teamMove(basicUnits : Array<Unit>, teamNum: number){
         let closestUnit = unit.closestUnit(filterUnitsAlive(basicUnitsFromOtherTeams));
 
         if(closestUnit === null) {
-            unit.stopMoving();
             continue
         }
+
 
         let closestUnitX = closestUnit.basicUnit.x;
         let closestUnitY = closestUnit.basicUnit.y;
@@ -295,26 +355,35 @@ function teamAttack(basicUnits : Array<Unit>, teamNum : number){
 }
 
 function handleMovement(){
+//game.input.keyboard.addCallbacks(null, null, null, function(KeyK : KeyboardEvent) {
+   // document.addEventListener('keypress', (event) => {
+        //if(textAnyKey != null) {
+            //textAnyKey.kill();
+       // }
 
-
-    //if(nightsAttacking) {
-        teamMove(allUnits, 0);
-    //}else{
-        teamMove(allUnits, 1);
-    //s}
+            for (let i = 0; i < teamCount; i++) {
+                teamMove(allUnits, i);
+            }
+     //})
+   // });
+}
+function handleAttack() {
+    for(let i = 0; i < teamCount; i++) {
+        teamAttack(allUnits, i);
+    }
 }
 
 function doOverlap(){
     for(let unit of allUnits) {
         //at every iteration of the loop
         //unit takes on a new unit from allUnits
-
-        //Array<Unit>
-        let unitsFromOtherTeam = filterForOtherTeams(filterUnitsAlive(allUnits), unit.team);
         //let dog of dogs
         //let cat of cats
         //let person of people
-        for(let otherUnit of unitsFromOtherTeam){
+        for(let otherUnit of allUnits){
+            if (otherUnit == unit){
+                continue
+            }
             game.physics.arcade.collide(otherUnit.basicUnit, unit.basicUnit, function(unit1 : Phaser.Sprite, unit2 : Phaser.Sprite) {
 
             });
@@ -325,17 +394,19 @@ function doOverlap(){
 }
 
 function update() {
-    /* Movement logic begin */
-    handleMovement();
+
+        //game.input.keyboard.addCallbacks(null, null, null, function(KeyK : KeyboardEvent) {
+        //});
+
+
+            handleMovement();
+
+
+
     /* Movement logic end */
 
     /* Attack Logic begin*/
-
-    //if(nightsAttacking) {
-        teamAttack(allUnits, 0)
-    //} else {
-        teamAttack(allUnits, 1)
-    //}
+    handleAttack();
     /* Attack Logic end */
 
     doOverlap();
