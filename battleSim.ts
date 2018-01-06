@@ -1,4 +1,8 @@
-var game = new Phaser.Game(1000, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(1000, 600, Phaser.CANVAS, 'phaser-example', {
+    preload: preload,
+    create: create,
+    update: update
+});
 
 function preload() {
     game.load.image('basicUnit', 'assets/bullet153.png');
@@ -7,13 +11,14 @@ function preload() {
 }
 
 class Unit {
-    public basicUnit : Phaser.Sprite;
-    public health : number;
-    private speed : number;
-    private damage : number;
-    private range : number;
-    public team : number;
-    constructor(x : number, y : number, health : number, speed : number, damage : number, range: number, team : number, sprite : string) {
+    public basicUnit: Phaser.Sprite;
+    public health: number;
+    private speed: number;
+    private damage: number;
+    private range: number;
+    public team: number;
+
+    constructor(x: number, y: number, health: number, speed: number, damage: number, range: number, team: number, sprite: string) {
         this.basicUnit = game.add.sprite(x, y, sprite);
         game.physics.arcade.enable(this.basicUnit);
         this.health = health;
@@ -23,7 +28,7 @@ class Unit {
         this.team = team;
     }
 
-    getRange(){
+    getRange() {
         return this.range;
     }
 
@@ -31,12 +36,12 @@ class Unit {
         return this.damage;
     }
 
-    setDirectionY(direction : number) {
-        if (direction ===0) {
+    setDirectionY(direction: number) {
+        if (direction === 0) {
             //switch direction: to be implemented by ibrahim
             //this.nightUnit.body.velocity.y = this.speed;
             throw "TODO: Unimplemented"
-        } else if (direction ===1){
+        } else if (direction === 1) {
             this.basicUnit.body.velocity.y = this.speed;
         } else if (direction === -1) {
             this.basicUnit.body.velocity.y = 0 - this.speed;
@@ -45,16 +50,16 @@ class Unit {
         }
     }
 
-    setDirectionX(direction : number) {
-        if (direction ===0) {
+    setDirectionX(direction: number) {
+        if (direction === 0) {
             //switch direction: to be implemented by ibrahim
             //this.nightUnit.body.velocity.y = this.speed;
             throw "TODO: Unimplemented"
-        } else if (direction ===1){
+        } else if (direction === 1) {
             this.basicUnit.body.velocity.x = this.speed;
         } else if (direction === -1) {
             this.basicUnit.body.velocity.x = 0 - this.speed;
-        } else{
+        } else {
             throw "Programmer Error..."
         }
     }
@@ -68,18 +73,18 @@ class Unit {
      * @param {Array<Unit>} arrayOfUnits
      * @return {Array<Unit>}
      */
-    withinRange(arrayOfUnits : Array<Unit>) : Array<Unit> {
+    withinRange(arrayOfUnits: Array<Unit>): Array<Unit> {
         // let's say that this is unit1
         // and array of units is [unit1{team:0}, unit2{team:1}, unit3{team2}]
         /* 'this' is a reference to the current object (which is an instance of Night (the class))*/
-        let arrayOfUnitsWithinRange : Array<Unit> = [];
+        let arrayOfUnitsWithinRange: Array<Unit> = [];
 
-        var currentUnitX : number = this.basicUnit.x;
-        var currentUnitY : number = this.basicUnit.y;
+        var currentUnitX: number = this.basicUnit.x;
+        var currentUnitY: number = this.basicUnit.y;
 
 
-        for(let unit of arrayOfUnits){
-            if(unit === this){
+        for (let unit of arrayOfUnits) {
+            if (unit === this) {
                 continue
             }
             /* In this loop, you're operating on
@@ -88,48 +93,48 @@ class Unit {
             *  2) this, the night which doesn't change
             * */
 
-            var unitX : number = unit.basicUnit.x;
-            var unitY : number = unit.basicUnit.y;
+            var unitX: number = unit.basicUnit.x;
+            var unitY: number = unit.basicUnit.y;
 
             var diffX = currentUnitX - unitX;
             var diffY = currentUnitY - unitY;
 
             var distance = Math.sqrt((diffX * diffX) + (diffY * diffY))
-            if(distance <= this.range) {
+            if (distance <= this.range) {
                 arrayOfUnitsWithinRange.push(unit);
             }
         }
         return arrayOfUnitsWithinRange;
     }
 
-    closestUnit(arrayOfUnits : Array<Unit>) : Unit | null {
+    closestUnit(arrayOfUnits: Array<Unit>): Unit | null {
         /* 'this' is a reference to the current object (which is an instance of Night (the class))*/
-        let arrayOfUnitsWithinRange : Array<Unit> = [];
+        let arrayOfUnitsWithinRange: Array<Unit> = [];
 
-        var currentUnitX : number = this.basicUnit.x;
-        var curremtUnitY : number = this.basicUnit.y;
+        var currentUnitX: number = this.basicUnit.x;
+        var curremtUnitY: number = this.basicUnit.y;
 
         var closestUnit = null;
         var closestDistance = Number.MAX_VALUE;
 
-        for(let unit of arrayOfUnits){
+        for (let unit of arrayOfUnits) {
             /* In this loop, you're operating on
             * 1) unit, which is changing in the loop
             *  and
             *  2) this, the night which doesn't change
             * */
-            if(unit === this){
+            if (unit === this) {
                 continue
             }
 
-            var unitX : number = unit.basicUnit.x;
-            var unitY : number = unit.basicUnit.y;
+            var unitX: number = unit.basicUnit.x;
+            var unitY: number = unit.basicUnit.y;
 
-            var diffX = currentUnitX     - unitX;
+            var diffX = currentUnitX - unitX;
             var diffY = curremtUnitY - unitY;
 
             var distance = Math.sqrt((diffX * diffX) + (diffY * diffY));
-            if(distance < closestDistance) {
+            if (distance < closestDistance) {
                 closestUnit = unit;
                 closestDistance = distance;
             }
@@ -143,8 +148,8 @@ class Unit {
     }
 
     isAlive() {
-        let alive : boolean = true;
-        if(this.health <= 0) {
+        let alive: boolean = true;
+        if (this.health <= 0) {
             alive = false;
         }
         return alive;
@@ -162,36 +167,35 @@ class Unit {
 }
 
 
-
-var amountKnights : number = 20;
-var amountMuskets : number = 20;
-var nightsAttacking : boolean = true;
-var allUnits : Array<Unit> = [];
-var teamCount : number = 3;
+var amountKnights: number = 20;
+var amountMuskets: number = 20;
+var nightsAttacking: boolean = true;
+var allUnits: Array<Unit> = [];
+var teamCount: number = 3;
 var textEntered = ""
-var textOnScreen : Phaser.Text | null;
-var textAnyKey : Phaser.Text | null;
-var amountUnits : number = 20;
+var textOnScreen: Phaser.Text | null;
+var textAnyKey: Phaser.Text;
+var amountUnits: number = 20;
 
-function handleTextCreate(){
-    var style = { font: "10px Arial", fill: "#ffffff", align: "center" };
+function handleTextCreate() {
+    var style = {font: "10px Arial", fill: "#ffffff", align: "center"};
     textOnScreen = game.add.text(0, 0, textEntered, style);
 
-    var style1 = { font: "30px Arial", fill: "#ffffff", align: "center" };
+    var style1 = {font: "30px Arial", fill: "#ffffff", align: "center"};
     textAnyKey = game.add.text(300, 100, "Press any key to start!", style1);
 
-    game.input.keyboard.addCallbacks(null, function(e : KeyboardEvent){
-        if(textOnScreen == null){
+    game.input.keyboard.addCallbacks(null, function (e: KeyboardEvent) {
+        if (textOnScreen == null) {
             return
         }
 
-        if(e.key === "Backspace"){
+        if (e.key === "Backspace") {
             textEntered = ""
-        } else{
+        } else {
             textEntered = textEntered + e.key
         }
 
-        if(e.key === "Enter") {
+        if (e.key === "Enter") {
             parseInt(textEntered);
             textEntered = ""
         }
@@ -204,31 +208,31 @@ function handleTextCreate(){
 function create() {
     let y = 100;
     let xdiff = 0;
-    for(let i : number = 0; i < amountUnits; i++) {
-        if(i % 15 === 0) {
+    for (let i: number = 0; i < amountUnits; i++) {
+        if (i % 15 === 0) {
             y += 30;
             xdiff = 0;
         }
-        allUnits.push(new Unit(250 + xdiff, y, 100, 100,0.95, 100, 0, 'basicUnit'));
+        allUnits.push(new Unit(250 + xdiff, y, 100, 100, 0.95, 100, 0, 'basicUnit'));
         xdiff += 25;
     }
 
     let knightY = 500;
     let nightxDiff = 0;
-    for(let i : number = 0; i < amountKnights; i++) {
-        if(i % 15 === 0) {
+    for (let i: number = 0; i < amountKnights; i++) {
+        if (i % 15 === 0) {
             knightY += 30;
             nightxDiff = 0;
         }
         allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 60, 1, 60, 1, 'knightUnit'));
-        nightxDiff +=25;
+        nightxDiff += 25;
     }
 
 
     let musketY = 650;
     let musketxDiff = 0;
-    for(let i : number = 0; i < amountMuskets; i++) {
-        if(i % 15 === 0) {
+    for (let i: number = 0; i < amountMuskets; i++) {
+        if (i % 15 === 0) {
             musketY += 30;
             musketxDiff = 0;
         }
@@ -247,11 +251,11 @@ function create() {
  * @param teamNumber
  * @return {Array<Unit>}
  */
-function filterForOtherTeams(arrayOfUnits : Array<Unit>, teamNumber : number) : Array<Unit> {
-    let otherTeams : Array<Unit> = [];
+function filterForOtherTeams(arrayOfUnits: Array<Unit>, teamNumber: number): Array<Unit> {
+    let otherTeams: Array<Unit> = [];
 
-    for(let i : number = 0; i < arrayOfUnits.length; i++) {
-        if(arrayOfUnits[i].team != teamNumber) {
+    for (let i: number = 0; i < arrayOfUnits.length; i++) {
+        if (arrayOfUnits[i].team != teamNumber) {
             otherTeams.push(arrayOfUnits[i])
         }
     }
@@ -265,11 +269,11 @@ function filterForOtherTeams(arrayOfUnits : Array<Unit>, teamNumber : number) : 
  * @param teamNumber
  * @return {Array<Unit>}
  */
-function filterForSameTeam(arrayOfUnits : Array<Unit>, teamNumber : number) : Array<Unit> {
-    let sameTeam : Array<Unit> = [];
+function filterForSameTeam(arrayOfUnits: Array<Unit>, teamNumber: number): Array<Unit> {
+    let sameTeam: Array<Unit> = [];
 
-    for(let i : number = 0; i < arrayOfUnits.length; i++) {
-        if(arrayOfUnits[i].team === teamNumber) {
+    for (let i: number = 0; i < arrayOfUnits.length; i++) {
+        if (arrayOfUnits[i].team === teamNumber) {
             sameTeam.push(arrayOfUnits[i])
         }
     }
@@ -283,11 +287,11 @@ function filterForSameTeam(arrayOfUnits : Array<Unit>, teamNumber : number) : Ar
  * @param {Array<Unit>} basicUnits
  * @return {Array<Unit>}
  */
-function filterUnitsAlive(basicUnits : Array<Unit>) {
-    let unitsAlive : Array<Unit> = [];
+function filterUnitsAlive(basicUnits: Array<Unit>) {
+    let unitsAlive: Array<Unit> = [];
 
-    for(let i = 0; i < basicUnits.length; i++) {
-        if(basicUnits[i].isAlive() === true) {
+    for (let i = 0; i < basicUnits.length; i++) {
+        if (basicUnits[i].isAlive() === true) {
             unitsAlive.push(basicUnits[i]);
         }
     }
@@ -300,14 +304,14 @@ function filterUnitsAlive(basicUnits : Array<Unit>) {
  * @param basicUnits
  * @param {number} teamNum
  */
-function teamMove(basicUnits : Array<Unit>, teamNum: number){
+function teamMove(basicUnits: Array<Unit>, teamNum: number) {
     let basicUnitsFromOtherTeams = filterForOtherTeams(basicUnits, teamNum);
     let basicUnitsFromTeam = filterForSameTeam(basicUnits, teamNum);
 
-    for(let unit of filterUnitsAlive(basicUnitsFromTeam)) {
+    for (let unit of filterUnitsAlive(basicUnitsFromTeam)) {
         let closestUnit = unit.closestUnit(filterUnitsAlive(basicUnitsFromOtherTeams));
 
-        if(closestUnit === null) {
+        if (closestUnit === null) {
             continue
         }
 
@@ -318,13 +322,13 @@ function teamMove(basicUnits : Array<Unit>, teamNum: number){
         let unitX = unit.basicUnit.x;
         let unitY = unit.basicUnit.y;
 
-        if(closestUnitX > unitX) {
+        if (closestUnitX > unitX) {
             unit.setDirectionX(1)
         } else {
             unit.setDirectionX(-1)
         }
 
-        if(closestUnitY > unitY) {
+        if (closestUnitY > unitY) {
             unit.setDirectionY(1)
         } else {
             unit.setDirectionY(-1)
@@ -338,15 +342,15 @@ function teamMove(basicUnits : Array<Unit>, teamNum: number){
  * @param basicUnits : Array<Units> all the units
  * @param teamNum : number the attacking team
  */
-function teamAttack(basicUnits : Array<Unit>, teamNum : number){
+function teamAttack(basicUnits: Array<Unit>, teamNum: number) {
     let basicUnitsFromOtherTeams = filterForOtherTeams(basicUnits, teamNum);
     let basicUnitsFromTeam = filterForSameTeam(basicUnits, teamNum);
-    for(let unit of basicUnitsFromTeam) {
+    for (let unit of basicUnitsFromTeam) {
         let closestUnit = unit.closestUnit(basicUnitsFromOtherTeams);
         // Check if within range of night
-        if(closestUnit && unit.withinRange([closestUnit]).length > 0){
+        if (closestUnit && unit.withinRange([closestUnit]).length > 0) {
             closestUnit.health = closestUnit.health - unit.getDamage();
-            if(closestUnit.health <= 0) {
+            if (closestUnit.health <= 0) {
                 closestUnit.killUnit();
             }
             //console.log(closestUnit.health);
@@ -354,37 +358,44 @@ function teamAttack(basicUnits : Array<Unit>, teamNum : number){
     }
 }
 
-function handleMovement(){
-//game.input.keyboard.addCallbacks(null, null, null, function(KeyK : KeyboardEvent) {
-   // document.addEventListener('keypress', (event) => {
-        //if(textAnyKey != null) {
-            //textAnyKey.kill();
-       // }
+var functionCalled: boolean = false;
 
-            for (let i = 0; i < teamCount; i++) {
-                teamMove(allUnits, i);
-            }
-     //})
-   // });
+function handleKeyPress() {
+    game.input.keyboard.addCallbacks(null, null, null, function (KeyK: KeyboardEvent) {
+        functionCalled = true;
+        textAnyKey.kill();
+    });
+    return functionCalled;
 }
+
+
+function handleMovement() {
+    handleKeyPress();
+    if(functionCalled === true) {
+        for (let i = 0; i < teamCount; i++) {
+            teamMove(allUnits, i);
+        }
+    }
+}
+
 function handleAttack() {
-    for(let i = 0; i < teamCount; i++) {
+    for (let i = 0; i < teamCount; i++) {
         teamAttack(allUnits, i);
     }
 }
 
-function doOverlap(){
-    for(let unit of allUnits) {
+function doOverlap() {
+    for (let unit of allUnits) {
         //at every iteration of the loop
         //unit takes on a new unit from allUnits
         //let dog of dogs
         //let cat of cats
         //let person of people
-        for(let otherUnit of allUnits){
-            if (otherUnit == unit){
+        for (let otherUnit of allUnits) {
+            if (otherUnit == unit) {
                 continue
             }
-            game.physics.arcade.collide(otherUnit.basicUnit, unit.basicUnit, function(unit1 : Phaser.Sprite, unit2 : Phaser.Sprite) {
+            game.physics.arcade.collide(otherUnit.basicUnit, unit.basicUnit, function (unit1: Phaser.Sprite, unit2: Phaser.Sprite) {
 
             });
         }
@@ -395,12 +406,11 @@ function doOverlap(){
 
 function update() {
 
-        //game.input.keyboard.addCallbacks(null, null, null, function(KeyK : KeyboardEvent) {
-        //});
+    //game.input.keyboard.addCallbacks(null, null, null, function(KeyK : KeyboardEvent) {
+    //});
 
 
-            handleMovement();
-
+    handleMovement();
 
 
     /* Movement logic end */
