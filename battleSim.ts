@@ -18,8 +18,9 @@ class Unit {
     private damage: number;
     private range: number;
     public team: number;
+    private accuracy: number;
 
-    constructor(x: number, y: number, health: number, speed: number, damage: number, range: number, team: number, sprite: string) {
+    constructor(x: number, y: number, health: number, speed: number, damage: number, range: number, team: number, sprite: string, accuracy : number) {
         this.basicUnit = game.add.sprite(x, y, sprite);
         game.physics.arcade.enable(this.basicUnit);
         this.health = health;
@@ -27,6 +28,7 @@ class Unit {
         this.damage = damage;
         this.range = range;
         this.team = team;
+        this.accuracy = accuracy;
     }
 
     getRange() {
@@ -156,14 +158,15 @@ class Unit {
         return alive;
     }
 
-    stopMoving() {
-        this.basicUnit.body.velocity.x = 0;
-        this.basicUnit.body.velocity.y = 0;
-    }
-
-    beginMoving() {
-        this.basicUnit.body.velocity.x = this.speed;
-        this.basicUnit.body.velocity.y = this.speed;
+    checkAttackSuccess() {
+        let r = Math.random();
+        let attackSuccess = false;
+        let chance = this.accuracy/100;
+        if (r < chance) {
+            attackSuccess = true;
+        }
+        //console.log(chance);
+        return attackSuccess;
     }
 }
 
@@ -210,7 +213,7 @@ function handleTextCreate() {
 
 function create() {
     game.world.setBounds(-1600, 0, 2600, 600);
-    handleTextCreate()
+    handleTextCreate();
     game.add.image(-1600, 0, 'uiPage');
     game.add.image(-800, 0, 'uiPage');
 
@@ -221,7 +224,7 @@ function create() {
             y += 30;
             xdiff = 0;
         }
-        allUnits.push(new Unit(250 + xdiff, y, 100, 100, 0.95, 100, 0, 'basicUnit'));
+        allUnits.push(new Unit(250 + xdiff, y, 100, 100, 0.95, 60, 0, 'basicUnit', 80));
         xdiff += 25;
     }
 
@@ -232,7 +235,7 @@ function create() {
             knightY += 30;
             nightxDiff = 0;
         }
-        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 60, 1, 60, 1, 'knightUnit'));
+        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 60, 1, 60, 1, 'knightUnit', 100));
         nightxDiff += 25;
     }
 
@@ -244,12 +247,9 @@ function create() {
             musketY += 30;
             musketxDiff = 0;
         }
-        allUnits.push(new Unit(musketY, 200 + musketxDiff, musketY, 60, 1, 60, 2, 'musketUnit'));
+        allUnits.push(new Unit(musketY, 200 + musketxDiff, musketY, 60, 2, 60, 2, 'musketUnit', 100));
         musketxDiff += 25;
     }
-
-
-
 }
 
 
@@ -379,7 +379,7 @@ function handleKeyPress() {
 
 function handleMovement() {
     handleKeyPress();
-    if(functionCalled === true) {
+    if (functionCalled === true) {
         for (let i = 0; i < teamCount; i++) {
             teamMove(allUnits, i);
         }
@@ -387,8 +387,13 @@ function handleMovement() {
 }
 
 function handleAttack() {
-    for (let i = 0; i < teamCount; i++) {
-        teamAttack(allUnits, i);
+    for (let unit of filterUnitsAlive(allUnits)) {
+        let unitsSuccessfullyAttacked = unit.checkAttackSuccess();
+        if(unitsSuccessfullyAttacked === true) {
+            for (let i = 0; i < teamCount; i++) {
+                teamAttack(allUnits, i);
+            }
+        }
     }
 }
 
@@ -416,15 +421,14 @@ function update() {
 
     //game.input.keyboard.addCallbacks(null, null, null, function(KeyK : KeyboardEvent) {
     //});
-    if(inputUsed === false) {
-        game.camera.x += 0 - 1600;
-    }else {
-        handleMovement();
-
-        handleAttack();
-
-        doOverlap();
+    if (inputUsed === false) {
+        //game.camera.x += 0 - 1600;
     }
+    handleMovement();
+
+    handleAttack();
+
+    doOverlap();
 }
 
 function render() {
