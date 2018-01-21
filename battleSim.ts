@@ -20,7 +20,7 @@ class Unit {
     public team: number;
     private accuracy: number;
 
-    constructor(x: number, y: number, health: number, speed: number, damage: number, range: number, team: number, sprite: string, accuracy : number) {
+    constructor(x: number, y: number, health: number, speed: number, damage: number, range: number, team: number, sprite: string, accuracy: number) {
         this.basicUnit = game.add.sprite(x, y, sprite);
         game.physics.arcade.enable(this.basicUnit);
         this.health = health;
@@ -55,8 +55,6 @@ class Unit {
 
     setDirectionX(direction: number) {
         if (direction === 0) {
-            //switch direction: to be implemented by ibrahim
-            //this.nightUnit.body.velocity.y = this.speed;
             throw "TODO: Unimplemented"
         } else if (direction === 1) {
             this.basicUnit.body.velocity.x = this.speed;
@@ -115,7 +113,7 @@ class Unit {
         let arrayOfUnitsWithinRange: Array<Unit> = [];
 
         var currentUnitX: number = this.basicUnit.x;
-        var curremtUnitY: number = this.basicUnit.y;
+        var currentUnitY: number = this.basicUnit.y;
 
         var closestUnit = null;
         var closestDistance = Number.MAX_VALUE;
@@ -134,7 +132,7 @@ class Unit {
             var unitY: number = unit.basicUnit.y;
 
             var diffX = currentUnitX - unitX;
-            var diffY = curremtUnitY - unitY;
+            var diffY = currentUnitY - unitY;
 
             var distance = Math.sqrt((diffX * diffX) + (diffY * diffY));
             if (distance < closestDistance) {
@@ -161,7 +159,7 @@ class Unit {
     checkAttackSuccess() {
         let r = Math.random();
         let attackSuccess = false;
-        let chance = this.accuracy/100;
+        let chance = this.accuracy / 100;
         if (r < 1.1 - chance) {
             attackSuccess = true;
         }
@@ -176,7 +174,7 @@ class Unit {
         if (r < s) {
             movementSuccess = true;
         } else {
-            if(this.speed > 80) {
+            if (this.speed > 80) {
                 this.speed = this.speed -= 100;
             } else {
                 this.speed = this.speed += 50;
@@ -185,6 +183,33 @@ class Unit {
         //console.log(chance);
         return movementSuccess;
     }
+
+    outnumberedTrueFalse(teamNum: number) {
+        let outnumbered = false;
+        let enemiesNearby = unitsNearby(teamNum);
+        if (enemiesNearby.length >= 2) {
+            console.log("hey");
+            outnumbered = true;
+        }
+        return outnumbered;
+    }
+
+    retreat(basicUnits: Array<Unit>, teamNum : number) {
+        let basicUnitsFromTeam = filterForSameTeam(basicUnits, teamNum);
+            let unitOutnumbered = this.outnumberedTrueFalse(2);
+
+
+
+
+            if(unitOutnumbered === true) {
+                let unitX = this.basicUnit.x;
+                let unitY = this.basicUnit.y;
+
+
+            }
+    }
+
+
 }
 
 
@@ -233,7 +258,6 @@ function create() {
     handleTextCreate();
     game.add.image(-1600, 0, 'uiPage');
     game.add.image(-800, 0, 'uiPage');
-
 
 
     let y = 100;
@@ -385,10 +409,24 @@ function teamAttack(basicUnits: Array<Unit>, teamNum: number) {
     }
 }
 
+function unitsNearby(teamNum: number) {
+    let enemiesNearby: Array<Unit> = [];
+    for (let unit of allUnits) {
+        let test = unit.closestUnit(filterForOtherTeams(allUnits, teamNum));
+        if (test = unit) {
+
+        }
+        enemiesNearby.push(test);
+    }
+    return enemiesNearby;
+}
+
 var functionCalled: boolean = false;
 
 function handleKeyPress() {
-    game.input.keyboard.addCallbacks(null, null, null, function (KeyK: KeyboardEvent) {
+    game.input.keyboard.addCallbacks(null, function () {
+    }, function () {
+    }, function (KeyK: KeyboardEvent) {
         functionCalled = true;
         textAnyKey.kill();
     });
@@ -398,9 +436,10 @@ function handleKeyPress() {
 
 function handleMovement() {
     handleKeyPress();
-    for(let unit of filterUnitsAlive(allUnits)) {
+
+    for (let unit of filterUnitsAlive(allUnits)) {
         let unitSuccessfullyMoved = unit.checkMovementAbility();
-        if(unitSuccessfullyMoved === true || unitSuccessfullyMoved === false) {
+        if (unitSuccessfullyMoved === true || unitSuccessfullyMoved === false) {
             if (functionCalled === true) {
                 for (let i = 0; i < teamCount; i++) {
                     teamMove(allUnits, i);
@@ -414,7 +453,7 @@ function handleMovement() {
 function handleAttack() {
     for (let unit of filterUnitsAlive(allUnits)) {
         let unitsSuccessfullyAttacked = unit.checkAttackSuccess();
-        if(unitsSuccessfullyAttacked === true) {
+        if (unitsSuccessfullyAttacked === true) {
             for (let i = 0; i < teamCount; i++) {
                 teamAttack(allUnits, i);
             }
