@@ -1,4 +1,4 @@
-var game = new Phaser.Game(1000, 600, Phaser.CANVAS, 'phaser-example', {
+var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', {
     preload: preload,
     create: create,
     update: update
@@ -162,7 +162,7 @@ class Unit {
         let r = Math.random();
         let attackSuccess = false;
         let chance = this.accuracy/100;
-        if (r < chance) {
+        if (r < 1.1 - chance) {
             attackSuccess = true;
         }
         //console.log(chance);
@@ -217,6 +217,8 @@ function create() {
     game.add.image(-1600, 0, 'uiPage');
     game.add.image(-800, 0, 'uiPage');
 
+
+
     let y = 100;
     let xdiff = 0;
     for (let i: number = 0; i < amountUnits; i++) {
@@ -224,7 +226,7 @@ function create() {
             y += 30;
             xdiff = 0;
         }
-        allUnits.push(new Unit(250 + xdiff, y, 100, 100, 0.95, 60, 0, 'basicUnit', 80));
+        allUnits.push(new Unit(250 + xdiff, y, 100, 100, 0.95, 60, 0, 'basicUnit', 90));
         xdiff += 25;
     }
 
@@ -235,7 +237,7 @@ function create() {
             knightY += 30;
             nightxDiff = 0;
         }
-        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 60, 1, 60, 1, 'knightUnit', 100));
+        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 60, 1, 60, 1, 'knightUnit', 80));
         nightxDiff += 25;
     }
 
@@ -247,7 +249,7 @@ function create() {
             musketY += 30;
             musketxDiff = 0;
         }
-        allUnits.push(new Unit(musketY, 200 + musketxDiff, musketY, 60, 2, 60, 2, 'musketUnit', 100));
+        allUnits.push(new Unit(musketY, 200 + musketxDiff, musketY, 60, 2, 60, 2, 'musketUnit', 60));
         musketxDiff += 25;
     }
 }
