@@ -168,6 +168,23 @@ class Unit {
         //console.log(chance);
         return attackSuccess;
     }
+
+    checkMovementAbility() {
+        let r = Math.random();
+        let s = Math.random() * 0.01;
+        let movementSuccess = false;
+        if (r < s) {
+            movementSuccess = true;
+        } else {
+            if(this.speed > 80) {
+                this.speed = this.speed -= 100;
+            } else {
+                this.speed = this.speed += 50;
+            }
+        }
+        //console.log(chance);
+        return movementSuccess;
+    }
 }
 
 
@@ -226,7 +243,7 @@ function create() {
             y += 30;
             xdiff = 0;
         }
-        allUnits.push(new Unit(250 + xdiff, y, 100, 100, 0.95, 60, 0, 'basicUnit', 90));
+        allUnits.push(new Unit(250 + xdiff, y, 100, 50, 0.95, 60, 0, 'basicUnit', 90));
         xdiff += 25;
     }
 
@@ -237,7 +254,7 @@ function create() {
             knightY += 30;
             nightxDiff = 0;
         }
-        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 60, 1, 60, 1, 'knightUnit', 80));
+        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 50, 1, 60, 1, 'knightUnit', 80));
         nightxDiff += 25;
     }
 
@@ -249,7 +266,7 @@ function create() {
             musketY += 30;
             musketxDiff = 0;
         }
-        allUnits.push(new Unit(musketY, 200 + musketxDiff, musketY, 60, 2, 60, 2, 'musketUnit', 60));
+        allUnits.push(new Unit(musketY, 200 + musketxDiff, musketY, 50, 2, 60, 2, 'musketUnit', 60));
         musketxDiff += 25;
     }
 }
@@ -381,11 +398,17 @@ function handleKeyPress() {
 
 function handleMovement() {
     handleKeyPress();
-    if (functionCalled === true) {
-        for (let i = 0; i < teamCount; i++) {
-            teamMove(allUnits, i);
+    for(let unit of filterUnitsAlive(allUnits)) {
+        let unitSuccessfullyMoved = unit.checkMovementAbility();
+        if(unitSuccessfullyMoved === true || unitSuccessfullyMoved === false) {
+            if (functionCalled === true) {
+                for (let i = 0; i < teamCount; i++) {
+                    teamMove(allUnits, i);
+                }
+            }
         }
     }
+
 }
 
 function handleAttack() {
