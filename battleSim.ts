@@ -160,7 +160,7 @@ class Unit {
         let r = Math.random();
         let attackSuccess = false;
         let chance = this.accuracy / 100;
-        if (r < 1.1 - chance) {
+        if (r < chance) {
             attackSuccess = true;
         }
         //console.log(chance);
@@ -174,11 +174,10 @@ class Unit {
         if (r < s) {
             movementSuccess = true;
         } else {
-            if (this.speed > 80) {
-                this.speed = this.speed -= 100;
-            } else {
-                this.speed = this.speed += 50;
-            }
+            let timer = game.time.create(false);
+            timer.add(3000, stumble);
+            timer.start();
+            //console.log(this.getSpeed());
         }
         //console.log(chance);
         return movementSuccess;
@@ -209,12 +208,16 @@ class Unit {
             }
     }
 
+    getSpeed() {
+        return this.speed;
+    }
+
 
 }
 
 
 var amountKnights: number = 20;
-var amountMuskets: number = 20;
+var amountMuskets: number = 40;
 var nightsAttacking: boolean = true;
 var allUnits: Array<Unit> = [];
 var teamCount: number = 3;
@@ -267,7 +270,7 @@ function create() {
             y += 30;
             xdiff = 0;
         }
-        allUnits.push(new Unit(250 + xdiff, y, 100, 50, 0.95, 60, 0, 'basicUnit', 90));
+        allUnits.push(new Unit(250 + xdiff, y, 100, 50, 0.95, 60, 0, 'basicUnit', 0));
         xdiff += 25;
     }
 
@@ -278,7 +281,7 @@ function create() {
             knightY += 30;
             nightxDiff = 0;
         }
-        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 50, 1, 60, 1, 'knightUnit', 80));
+        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 50, 1, 60, 1, 'knightUnit', 0));
         nightxDiff += 25;
     }
 
@@ -290,7 +293,7 @@ function create() {
             musketY += 30;
             musketxDiff = 0;
         }
-        allUnits.push(new Unit(musketY, 200 + musketxDiff, musketY, 50, 2, 60, 2, 'musketUnit', 60));
+        allUnits.push(new Unit(musketY, 200 + musketxDiff, 130, 50, 2, 60, 2, 'musketUnit', 0));
         musketxDiff += 25;
     }
 }
@@ -478,6 +481,13 @@ function doOverlap() {
         }
         //overlap(:sprite, :sprite)
 
+    }
+}
+
+function stumble() {
+    for(let unit of allUnits) {
+        let speed = unit.getSpeed();
+        speed = speed - 100;
     }
 }
 
