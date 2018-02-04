@@ -236,16 +236,17 @@ class Unit {
 }
 
 
-var amountKnights: number = 5;
-var amountMuskets: number = 7;
+var amountKnights: number = 20;
+var amountMuskets: number = 15;
 var nightsAttacking: boolean = true;
 var allUnits: Array<Unit> = [];
 var teamCount: number = 3;
 var textEntered = "";
 var textOnScreen: Phaser.Text | null;
 var textAnyKey: Phaser.Text;
-var amountUnits: number = 9;
+var amountUnits: number = 24;
 var inputUsed: boolean = false;
+var testUnit : Phaser.Sprite;
 
 function handleTextCreate() {
     var style = {font: "10px Arial", fill: "#ffffff", align: "center"};
@@ -280,6 +281,10 @@ function create() {
     handleTextCreate();
     game.add.image(-1600, 0, 'uiPage');
     game.add.image(-800, 0, 'uiPage');
+
+    testUnit = game.add.sprite(0, 0, 'basicUnit');
+    game.physics.enable(testUnit, Phaser.Physics.ARCADE);
+
 
 
     let y = 100;
@@ -518,8 +523,16 @@ function doOverlap() {
     }
 }
 
+function myFunction() {
+    allUnits.push(new Unit(testUnit.x, testUnit.y, 100, 50, 0.95, 50, 0, 'basicUnit', 100));
+}
+
 
 function update() {
+        testUnit.x = game.input.x;
+        testUnit.y = game.input.y;
+
+    game.input.onDown.add(myFunction, this);
 
     //game.input.keyboard.addCallbacks(null, null, null, function(KeyK : KeyboardEvent) {
     //});
