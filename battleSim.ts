@@ -19,12 +19,14 @@ class Unit {
     private range: number;
     public team: number;
     private accuracy: number;
+    private originalSpeed: number;
 
     constructor(x: number, y: number, health: number, speed: number, damage: number, range: number, team: number, sprite: string, accuracy: number) {
         this.basicUnit = game.add.sprite(x, y, sprite);
         game.physics.arcade.enable(this.basicUnit);
         this.health = health;
         this.speed = speed;
+        this.originalSpeed = speed;
         this.damage = damage;
         this.range = range;
         this.team = team;
@@ -37,6 +39,11 @@ class Unit {
 
     getDamage() {
         return this.damage;
+    }
+
+    getHealth() {
+        //for testing purposes
+        return this.health;
     }
 
     setDirectionY(direction: number) {
@@ -100,12 +107,13 @@ class Unit {
             var diffX = currentUnitX - unitX;
             var diffY = currentUnitY - unitY;
 
-            var distance = Math.sqrt((diffX * diffX) + (diffY * diffY))
+            var distance = Math.sqrt((diffX * diffX) + (diffY * diffY));
             if (distance <= this.range) {
                 arrayOfUnitsWithinRange.push(unit);
             }
         }
         return arrayOfUnitsWithinRange;
+
     }
 
     closestUnit(arrayOfUnits: Array<Unit>): Unit | null {
@@ -170,7 +178,7 @@ class Unit {
     checkMovementAbility() {
         let r = Math.random();
         let unitStumbled = false;
-        if (r < .20) {
+        if (r < .05) {
             unitStumbled = true;
         }
         //console.log(chance);
@@ -205,26 +213,38 @@ class Unit {
     }
 
     stumble() {
-        this.speed = this.speed - 10;
+        this.speed -= getRandomArbitrary(10, 30);
+        var theUnit = this;
         game.time.events.add(Phaser.Timer.SECOND, function () {
-
+            theUnit.speed = theUnit.originalSpeed;
         }, this);
-        this.speed = this.speed + 10;
     }
 
+    stopIfWithinRange() {
+        let closestUnit = this.closestUnit(filterUnitsAlive(filterForOtherTeams(allUnits, this.team)));
 
+        if (closestUnit == null){
+            return;
+        }
+
+        if(this.withinRange([closestUnit]).length > 0) {
+            this.speed = 0;
+        }else{
+            this.speed = this.originalSpeed;
+        }
+    }
 }
 
 
-var amountKnights: number = 20;
-var amountMuskets: number = 40;
+var amountKnights: number = 5;
+var amountMuskets: number = 7;
 var nightsAttacking: boolean = true;
 var allUnits: Array<Unit> = [];
 var teamCount: number = 3;
 var textEntered = "";
 var textOnScreen: Phaser.Text | null;
 var textAnyKey: Phaser.Text;
-var amountUnits: number = 20;
+var amountUnits: number = 9;
 var inputUsed: boolean = false;
 
 function handleTextCreate() {
@@ -257,7 +277,6 @@ function handleTextCreate() {
 }
 
 function create() {
-    game.world.setBounds(-1600, 0, 2600, 600);
     handleTextCreate();
     game.add.image(-1600, 0, 'uiPage');
     game.add.image(-800, 0, 'uiPage');
@@ -270,7 +289,7 @@ function create() {
             y += 30;
             xdiff = 0;
         }
-        allUnits.push(new Unit(250 + xdiff, y, 100, 50, 0.95, 11, 0, 'basicUnit', 100));
+        allUnits.push(new Unit(250 + xdiff, y, 100, 50, 0.95, 50, 0, 'basicUnit', 100));
         xdiff += 25;
     }
 
@@ -281,7 +300,7 @@ function create() {
             knightY += 30;
             nightxDiff = 0;
         }
-        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 50, 1, 0, 1, 'knightUnit', 0));
+        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 50, 1.5, 50, 1, 'knightUnit', 100));
         nightxDiff += 25;
     }
 
@@ -293,11 +312,24 @@ function create() {
             musketY += 30;
             musketxDiff = 0;
         }
-        allUnits.push(new Unit(musketY, 200 + musketxDiff, 130, 50, 2, 0, 2, 'musketUnit', 0));
+        allUnits.push(new Unit(musketY, 200 + musketxDiff, 130, 50, 2, 50, 2, 'musketUnit', 100));
         musketxDiff += 25;
     }
+
+    setInterval(function(){
+        stumbleHandler();
+    }, 1000)
 }
 
+function stumbleHandler(){
+    // put stumble logic here
+    for (let unit of filterUnitsAlive(allUnits)) {
+        let unitStumbled = unit.checkMovementAbility();
+        if (unitStumbled === true) {
+            unit.stumble();
+        }
+    }
+}
 
 /**
  *
@@ -316,6 +348,9 @@ function filterForOtherTeams(arrayOfUnits: Array<Unit>, teamNumber: number): Arr
     return otherTeams
 }
 
+function getRandomArbitrary(min : number, max : number) {
+    return Math.random() * (max - min) + min;
+}
 
 /**
  *
@@ -439,15 +474,11 @@ function handleKeyPress() {
 
 function handleMovement() {
     handleKeyPress();
-
     for (let unit of filterUnitsAlive(allUnits)) {
-        let unitSuccessfullyMoved = unit.checkMovementAbility();
+        unit.stopIfWithinRange();
         if (functionCalled === true) {
             for (let i = 0; i < teamCount; i++) {
                 teamMove(allUnits, i);
-            }
-            if (unitSuccessfullyMoved === false) {
-                unit.stumble();
             }
         }
     }
@@ -458,10 +489,12 @@ function handleAttack() {
     for (let unit of filterUnitsAlive(allUnits)) {
         let unitsSuccessfullyAttacked = unit.checkAttackSuccess();
         if (unitsSuccessfullyAttacked === true) {
-            for (let i = 0; i < teamCount; i++) {
-                teamAttack(allUnits, i);
-            }
+
         }
+    }
+
+    for (let i = 0; i < teamCount; i++) {
+        teamAttack(filterUnitsAlive(allUnits), i);
     }
 }
 
@@ -485,12 +518,6 @@ function doOverlap() {
     }
 }
 
-function stumble() {
-    for (let unit of allUnits) {
-        let speed = unit.getSpeed();
-        speed = speed - 100;
-    }
-}
 
 function update() {
 
@@ -504,6 +531,7 @@ function update() {
     handleAttack();
 
     doOverlap();
+
 }
 
 function render() {
