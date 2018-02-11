@@ -1,4 +1,4 @@
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', {
+var game = new Phaser.Game(1900, 950, Phaser.CANVAS, 'phaser-example', {
     preload: preload,
     create: create,
     update: update
@@ -255,6 +255,34 @@ var inputUsed: boolean = false;
 var testUnit : Phaser.Sprite;
 var graphics : Phaser.Graphics;
 var drawing = false;
+let SPAWNTEAM = 0;
+
+let mySpawnArray = [
+    {
+        'health': 100,
+        'speed' : 50,
+        'damage' : 0.95,
+        'range' : 15,
+        'key' : 'basicUnit',
+        'accuracy' : 0
+    },
+    {
+        'health' : 150,
+        'speed' : 50,
+        'damage' : 1.5,
+        'range' : 50,
+        'key' : 'knightUnit',
+        'accuracy' : 0
+    },
+    {
+        'health' : 130,
+        'speed' : 50,
+        'damage' : 2,
+        'range' : 70,
+        'key' : 'musketUnit',
+        'accuracy' : 0
+    }
+];
 
 function handleTextCreate() {
     var style = {font: "10px Arial", fill: "#ffffff", align: "center"};
@@ -305,29 +333,6 @@ function create() {
 
     graphics = game.add.graphics(0, 0);
 
-
-    let knightY = 500;
-    let nightxDiff = 0;
-    for (let i: number = 0; i < amountKnights; i++) {
-        if (i % 15 === 0) {
-            knightY += 30;
-            nightxDiff = 0;
-        }
-        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 50, 1.5, 50, 1, 'knightUnit', 100));
-        nightxDiff += 25;
-    }
-
-
-    let musketY = 650;
-    let musketxDiff = 0;
-    for (let i: number = 0; i < amountMuskets; i++) {
-        if (i % 15 === 0) {
-            musketY += 30;
-            musketxDiff = 0;
-        }
-        allUnits.push(new Unit(musketY, 200 + musketxDiff, 130, 50, 2, 50, 2, 'musketUnit', 100));
-        musketxDiff += 25;
-    }
 
     setInterval(function(){
         stumbleHandler();
@@ -534,6 +539,7 @@ function doOverlap() {
 let permMouseX = -1;
 let permMouseY = -1;
 
+let test = false;
 function startDrawing() {
     permMouseX = game.input.mousePointer.x;
     permMouseY = game.input.mousePointer.y;
@@ -542,24 +548,25 @@ function startDrawing() {
     graphics.lineStyle(10, 0xffd900, 1);
 
     drawing = true;
-
+    test = true
 }
 
 function eraseLineAndPrint() {
-    graphics.clear();
+    if(test === true) {
+        graphics.clear();
 
-    drawing = false;
+        drawing = false;
 
-    let diffX = testUnit.x - permMouseX;
-    let diffY = testUnit.y - permMouseY;
-    let unitsPossible = Math.sqrt((diffX * diffX) + (diffY * diffY)) / 15;
+        let diffX = testUnit.x - permMouseX;
+        let diffY = testUnit.y - permMouseY;
+        let unitsPossible = Math.sqrt((diffX * diffX) + (diffY * diffY)) / 15;
 
-    let xInc = diffX/unitsPossible
-    let yInc = diffY/unitsPossible
-    let x = permMouseX;
-    let y = permMouseY;
-    let count = 0;
-    while (count < unitsPossible){
+        let xInc = diffX/unitsPossible
+        let yInc = diffY/unitsPossible
+        let x = permMouseX;
+        let y = permMouseY;
+        let count = 0;
+        while (count < unitsPossible){
             allUnits.push(new Unit(
                 x,
                 y,
@@ -572,52 +579,25 @@ function eraseLineAndPrint() {
                 mySpawnArray[SPAWNTEAM].accuracy)
             );
 
-        x = x + xInc;
-        y = y + yInc;
-        count = count + 1;
-    }
+            x = x + xInc;
+            y = y + yInc;
+            count = count + 1;
+        }
 
-    allUnits.push(new Unit(
-        testUnit.x,
-        testUnit.y,
-        mySpawnArray[SPAWNTEAM].health,
-        mySpawnArray[SPAWNTEAM].speed,
-        mySpawnArray[SPAWNTEAM].damage,
-        mySpawnArray[SPAWNTEAM].range,
-        SPAWNTEAM,
-        mySpawnArray[SPAWNTEAM].key,
-        mySpawnArray[SPAWNTEAM].accuracy)
-    );
+        allUnits.push(new Unit(
+            testUnit.x,
+            testUnit.y,
+            mySpawnArray[SPAWNTEAM].health,
+            mySpawnArray[SPAWNTEAM].speed,
+            mySpawnArray[SPAWNTEAM].damage,
+            mySpawnArray[SPAWNTEAM].range,
+            SPAWNTEAM,
+            mySpawnArray[SPAWNTEAM].key,
+            mySpawnArray[SPAWNTEAM].accuracy)
+        );
+        test = false;
+    }
 }
-
-let SPAWNTEAM = 0;
-
-let mySpawnArray = [
-    {
-        'health': 100,
-        'speed' : 50,
-        'damage' : 0.95,
-        'range' : 15,
-        'key' : 'basicUnit',
-        'accuracy' : 100
-    },
-    {
-        'health' : 150,
-        'speed' : 50,
-        'damage' : 1.5,
-        'range' : 50,
-        'key' : 'knightUnit',
-        'accuracy' : 100
-    },
-    {
-        'health' : 130,
-        'speed' : 50,
-        'damage' : 2,
-        'range' : 70,
-        'key' : 'musketUnit',
-        'accuracy' : 0
-    }
-];
 
 function changeUnit() {
 
