@@ -9,6 +9,7 @@ function preload() {
     game.load.image('knightUnit', 'assets/bullet147.png');
     game.load.image('musketUnit', 'assets/bullet112.png');
     game.load.image('uiPage', 'assets/sunset.png');
+    game.load.image('changeUnitButton', 'assets/spacebar.png');
 }
 
 class Unit {
@@ -20,7 +21,7 @@ class Unit {
     public team: number;
     private accuracy: number;
     private originalSpeed: number;
-
+    private sprite : string;
     constructor(x: number, y: number, health: number, speed: number, damage: number, range: number, team: number, sprite: string, accuracy: number) {
         this.basicUnit = game.add.sprite(x, y, sprite);
         game.physics.arcade.enable(this.basicUnit);
@@ -31,6 +32,7 @@ class Unit {
         this.range = range;
         this.team = team;
         this.accuracy = accuracy;
+        this.sprite = sprite;
     }
 
     getRange() {
@@ -233,6 +235,10 @@ class Unit {
             this.speed = this.originalSpeed;
         }
     }
+
+    getKey() {
+        return this.sprite;
+    }
 }
 
 
@@ -247,6 +253,8 @@ var textAnyKey: Phaser.Text;
 var amountUnits: number = 24;
 var inputUsed: boolean = false;
 var testUnit : Phaser.Sprite;
+var graphics : Phaser.Graphics;
+var drawing = false;
 
 function handleTextCreate() {
     var style = {font: "10px Arial", fill: "#ffffff", align: "center"};
@@ -285,18 +293,18 @@ function create() {
     testUnit = game.add.sprite(0, 0, 'basicUnit');
     game.physics.enable(testUnit, Phaser.Physics.ARCADE);
 
+    let changeUnitButton = game.add.sprite(200, 0, 'changeUnitButton');
+    changeUnitButton.inputEnabled = true;
 
+    changeUnitButton.events.onInputDown.add(changeUnit);
 
-    let y = 100;
-    let xdiff = 0;
-    for (let i: number = 0; i < amountUnits; i++) {
-        if (i % 15 === 0) {
-            y += 30;
-            xdiff = 0;
-        }
-        allUnits.push(new Unit(250 + xdiff, y, 100, 50, 0.95, 50, 0, 'basicUnit', 100));
-        xdiff += 25;
-    }
+    game.input.onDown.add(myFunction);
+
+    game.input.onDown.add(startDrawing);
+    game.input.onUp.add(eraseLineAndPrint);
+
+    graphics = game.add.graphics(0, 0);
+
 
     let knightY = 500;
     let nightxDiff = 0;
@@ -523,16 +531,135 @@ function doOverlap() {
     }
 }
 
-function myFunction() {
-    allUnits.push(new Unit(testUnit.x, testUnit.y, 100, 50, 0.95, 50, 0, 'basicUnit', 100));
+let permMouseX = -1;
+let permMouseY = -1;
+
+function startDrawing() {
+    permMouseX = game.input.mousePointer.x;
+    permMouseY = game.input.mousePointer.y;
+
+    graphics.beginFill(0xFF3300);
+    graphics.lineStyle(10, 0xffd900, 1);
+
+    drawing = true;
+
 }
 
+function eraseLineAndPrint() {
+    graphics.clear();
+
+    drawing = false;
+
+    let diffX = testUnit.x - permMouseX;
+    let diffY = testUnit.y - permMouseY;
+    let unitsPossible = Math.sqrt((diffX * diffX) + (diffY * diffY)) / 15;
+
+    let xInc = diffX/unitsPossible
+    let yInc = diffY/unitsPossible
+    let x = permMouseX;
+    let y = permMouseY;
+    let count = 0;
+    while (count < unitsPossible){
+            allUnits.push(new Unit(
+                x,
+                y,
+                mySpawnArray[SPAWNTEAM].health,
+                mySpawnArray[SPAWNTEAM].speed,
+                mySpawnArray[SPAWNTEAM].damage,
+                mySpawnArray[SPAWNTEAM].range,
+                SPAWNTEAM,
+                mySpawnArray[SPAWNTEAM].key,
+                mySpawnArray[SPAWNTEAM].accuracy)
+            );
+
+        x = x + xInc;
+        y = y + yInc;
+        count = count + 1;
+    }
+
+    allUnits.push(new Unit(
+        testUnit.x,
+        testUnit.y,
+        mySpawnArray[SPAWNTEAM].health,
+        mySpawnArray[SPAWNTEAM].speed,
+        mySpawnArray[SPAWNTEAM].damage,
+        mySpawnArray[SPAWNTEAM].range,
+        SPAWNTEAM,
+        mySpawnArray[SPAWNTEAM].key,
+        mySpawnArray[SPAWNTEAM].accuracy)
+    );
+}
+
+let SPAWNTEAM = 0;
+
+let mySpawnArray = [
+    {
+        'health': 100,
+        'speed' : 50,
+        'damage' : 0.95,
+        'range' : 15,
+        'key' : 'basicUnit',
+        'accuracy' : 100
+    },
+    {
+        'health' : 150,
+        'speed' : 50,
+        'damage' : 1.5,
+        'range' : 50,
+        'key' : 'knightUnit',
+        'accuracy' : 100
+    },
+    {
+        'health' : 130,
+        'speed' : 50,
+        'damage' : 2,
+        'range' : 70,
+        'key' : 'musketUnit',
+        'accuracy' : 0
+    }
+];
+
+function changeUnit() {
+
+
+        if(SPAWNTEAM < teamCount - 1) {
+            SPAWNTEAM++;
+        } else {
+            SPAWNTEAM = 0;
+        }
+
+    testUnit.loadTexture(mySpawnArray[SPAWNTEAM].key);
+}
+
+function myFunction() {
+    //let myStringArray = ["basicUnit","knightUnit", "musketUnit"];
+   // sprite = myStringArray[counter];
+        allUnits.push(new Unit(
+            testUnit.x,
+            testUnit.y,
+            mySpawnArray[SPAWNTEAM].health,
+            mySpawnArray[SPAWNTEAM].speed,
+            mySpawnArray[SPAWNTEAM].damage,
+            mySpawnArray[SPAWNTEAM].range,
+            SPAWNTEAM,
+            mySpawnArray[SPAWNTEAM].key,
+            mySpawnArray[SPAWNTEAM].accuracy));
+}
 
 function update() {
-        testUnit.x = game.input.x;
-        testUnit.y = game.input.y;
+    testUnit.x = game.input.mousePointer.x;
+    testUnit.y = game.input.mousePointer.y;
 
-    game.input.onDown.add(myFunction, this);
+    if(drawing === true) {
+        graphics.clear();
+
+        graphics.beginFill(0xFF3300);
+        graphics.lineStyle(10, 0xffd900, 1);
+
+        graphics.moveTo(permMouseX, permMouseY);
+        graphics.lineTo(testUnit.x, testUnit.y);
+    }
+
 
     //game.input.keyboard.addCallbacks(null, null, null, function(KeyK : KeyboardEvent) {
     //});
