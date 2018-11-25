@@ -496,7 +496,7 @@ function eraseLineAndPrint() {
 }
 function changeUnit() {
     if (SPAWNTEAM < teamCount - 1) {
-        SPAWNTEAM++;
+        SPAWNTEAM = SPAWNTEAM + 1;
     }
     else {
         SPAWNTEAM = 0;
