@@ -1,5 +1,5 @@
 "use strict";
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', {
+var game = new Phaser.Game(1900, 950, Phaser.CANVAS, 'phaser-example', {
     preload: preload,
     create: create,
     update: update
@@ -217,6 +217,33 @@ var inputUsed = false;
 var testUnit;
 var graphics;
 var drawing = false;
+var SPAWNTEAM = 0;
+var mySpawnArray = [
+    {
+        'health': 100,
+        'speed': 50,
+        'damage': 0.95,
+        'range': 15,
+        'key': 'basicUnit',
+        'accuracy': 0
+    },
+    {
+        'health': 150,
+        'speed': 50,
+        'damage': 1.5,
+        'range': 50,
+        'key': 'knightUnit',
+        'accuracy': 0
+    },
+    {
+        'health': 130,
+        'speed': 50,
+        'damage': 2,
+        'range': 70,
+        'key': 'musketUnit',
+        'accuracy': 0
+    }
+];
 function handleTextCreate() {
     var style = { font: "10px Arial", fill: "#ffffff", align: "center" };
     textOnScreen = game.add.text(0 - 1600, 0, textEntered, style);
@@ -253,26 +280,6 @@ function create() {
     game.input.onDown.add(startDrawing);
     game.input.onUp.add(eraseLineAndPrint);
     graphics = game.add.graphics(0, 0);
-    var knightY = 500;
-    var nightxDiff = 0;
-    for (var i = 0; i < amountKnights; i++) {
-        if (i % 15 === 0) {
-            knightY += 30;
-            nightxDiff = 0;
-        }
-        allUnits.push(new Unit(250 + nightxDiff, knightY, 150, 50, 1.5, 50, 1, 'knightUnit', 100));
-        nightxDiff += 25;
-    }
-    var musketY = 650;
-    var musketxDiff = 0;
-    for (var i = 0; i < amountMuskets; i++) {
-        if (i % 15 === 0) {
-            musketY += 30;
-            musketxDiff = 0;
-        }
-        allUnits.push(new Unit(musketY, 200 + musketxDiff, 130, 50, 2, 50, 2, 'musketUnit', 100));
-        musketxDiff += 25;
-    }
     setInterval(function () {
         stumbleHandler();
     }, 1000);
@@ -395,10 +402,10 @@ function unitsNearby(teamNum) {
     var enemiesNearby = [];
     for (var _i = 0, allUnits_1 = allUnits; _i < allUnits_1.length; _i++) {
         var unit = allUnits_1[_i];
-        var test = unit.closestUnit(filterForOtherTeams(allUnits, teamNum));
-        if (test = unit) {
+        var test_1 = unit.closestUnit(filterForOtherTeams(allUnits, teamNum));
+        if (test_1 = unit) {
         }
-        enemiesNearby.push(test);
+        enemiesNearby.push(test_1);
     }
     return enemiesNearby;
 }
@@ -456,59 +463,37 @@ function doOverlap() {
 }
 var permMouseX = -1;
 var permMouseY = -1;
+var test = false;
 function startDrawing() {
     permMouseX = game.input.mousePointer.x;
     permMouseY = game.input.mousePointer.y;
     graphics.beginFill(0xFF3300);
     graphics.lineStyle(10, 0xffd900, 1);
     drawing = true;
+    test = true;
 }
 function eraseLineAndPrint() {
-    graphics.clear();
-    drawing = false;
-    var diffX = testUnit.x - permMouseX;
-    var diffY = testUnit.y - permMouseY;
-    var unitsPossible = Math.sqrt((diffX * diffX) + (diffY * diffY)) / 15;
-    var xInc = diffX / unitsPossible;
-    var yInc = diffY / unitsPossible;
-    var x = permMouseX;
-    var y = permMouseY;
-    var count = 0;
-    while (count < unitsPossible) {
-        allUnits.push(new Unit(x, y, mySpawnArray[SPAWNTEAM].health, mySpawnArray[SPAWNTEAM].speed, mySpawnArray[SPAWNTEAM].damage, mySpawnArray[SPAWNTEAM].range, SPAWNTEAM, mySpawnArray[SPAWNTEAM].key, mySpawnArray[SPAWNTEAM].accuracy));
-        x = x + xInc;
-        y = y + yInc;
-        count = count + 1;
+    if (test === true) {
+        graphics.clear();
+        drawing = false;
+        var diffX = testUnit.x - permMouseX;
+        var diffY = testUnit.y - permMouseY;
+        var unitsPossible = Math.sqrt((diffX * diffX) + (diffY * diffY)) / 15;
+        var xInc = diffX / unitsPossible;
+        var yInc = diffY / unitsPossible;
+        var x = permMouseX;
+        var y = permMouseY;
+        var count = 0;
+        while (count < unitsPossible) {
+            allUnits.push(new Unit(x, y, mySpawnArray[SPAWNTEAM].health, mySpawnArray[SPAWNTEAM].speed, mySpawnArray[SPAWNTEAM].damage, mySpawnArray[SPAWNTEAM].range, SPAWNTEAM, mySpawnArray[SPAWNTEAM].key, mySpawnArray[SPAWNTEAM].accuracy));
+            x = x + xInc;
+            y = y + yInc;
+            count = count + 1;
+        }
+        allUnits.push(new Unit(testUnit.x, testUnit.y, mySpawnArray[SPAWNTEAM].health, mySpawnArray[SPAWNTEAM].speed, mySpawnArray[SPAWNTEAM].damage, mySpawnArray[SPAWNTEAM].range, SPAWNTEAM, mySpawnArray[SPAWNTEAM].key, mySpawnArray[SPAWNTEAM].accuracy));
+        test = false;
     }
-    allUnits.push(new Unit(testUnit.x, testUnit.y, mySpawnArray[SPAWNTEAM].health, mySpawnArray[SPAWNTEAM].speed, mySpawnArray[SPAWNTEAM].damage, mySpawnArray[SPAWNTEAM].range, SPAWNTEAM, mySpawnArray[SPAWNTEAM].key, mySpawnArray[SPAWNTEAM].accuracy));
 }
-var SPAWNTEAM = 0;
-var mySpawnArray = [
-    {
-        'health': 100,
-        'speed': 50,
-        'damage': 0.95,
-        'range': 15,
-        'key': 'basicUnit',
-        'accuracy': 100
-    },
-    {
-        'health': 150,
-        'speed': 50,
-        'damage': 1.5,
-        'range': 50,
-        'key': 'knightUnit',
-        'accuracy': 100
-    },
-    {
-        'health': 130,
-        'speed': 50,
-        'damage': 2,
-        'range': 70,
-        'key': 'musketUnit',
-        'accuracy': 0
-    }
-];
 function changeUnit() {
     if (SPAWNTEAM < teamCount - 1) {
         SPAWNTEAM++;
